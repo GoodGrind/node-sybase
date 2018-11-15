@@ -127,6 +127,4 @@ Sybase.prototype.onSQLError = function (data) {
   callBackFunctions.forEach(callback => callback(error))
 }
 
-    console.log("this: " + this + " currentMessages: " +  this.currentMessages + " this.queryCount: " + this.queryCount);
-    console.log("sql request written: " + strMsg);
 module.exports = Sybase
