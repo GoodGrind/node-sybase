@@ -1,188 +1,169 @@
+const expect = require('chai').expect
+const { describe, it, before, after } = require('mocha')
+const Sybase = require('../src/SybaseDB.js')
+const P = require('bluebird')
 
-var expect = require("chai").expect;
-var Sybase = require("../src/SybaseDB.js");
-var P = require("bluebird");
+// Configure To Connect To Your database here:
+const host = '10.0.0.141'
+const port = 5000
+const user = 'sa'
+const pw = ''
+const db = 'exchange_wl1'
 
-//Configure To Connect To Your database here:
-var host = '10.0.0.141',
-	port = 5000,
-	user = 'sa',
-	pw = '',
-	db = "exchange_wl1";
+describe('Node Sybase Bridge', function () {
+  let subject
+  let connectError
 
-describe("Node Sybase Bridge", function() {
-	
-	var subject;
-	var connectError;
-	
-	before(function(done){
-		subject = new Sybase(host, port, db, user, pw, true);	
-		subject.connect(function(err) {
-			connectError = err;
-			done();
-		});
-	});
+  before(function (done) {
+    subject = new Sybase(host, port, db, user, pw, true)
+    subject.connect(function (err) {
+      connectError = err
+      done()
+    })
+  })
 
-	after(function(done) {
-		subject.disconnect();
-		done();
-	});
+  after(function (done) {
+    subject.disconnect()
+    done()
+  })
 
-	it("Connect", function(done) {
-		expect(connectError).to.equal(null);
-		expect(subject.isConnected()).to.equal(true);
-		done();
-	});
+  it('Connect', function (done) {
+    expect(connectError).to.equal(null)
+    expect(subject.isConnected()).to.equal(true)
+    done()
+  })
 
-	it("Simple Single Array Result", function(done) {
-		
-		if (!subject.isConnected()) {
-			expect(connectError).to.equal(null);
-			done();
-			return;	
-		}
+  it('Simple Single Array Result', function (done) {
+    if (!subject.isConnected()) {
+      expect(connectError).to.equal(null)
+      done()
+      return
+    }
 
-		subject.query("select top 1 * from accounts", function(err, data) {
+    subject.query('select top 1 * from accounts', function (err, data) {
+      expect(err).to.equal(null)
 
-			expect(err).to.equal(null);
+      expect(data).to.be.a('array')
+      expect(data.length).to.equal(1)
+      done()
+    })
+  })
 
-			expect(data).to.be.a('array');
-			expect(data.length).to.equal(1);			
-			done();
-		});
+  it('Should work with updates', function (done) {
+    if (!subject.isConnected()) {
+      expect(connectError).to.equal(null)
+      done()
+      return
+    }
 
-	});
+    const pquery = P.promisify(subject.query, { context: subject })
+    pquery("update accounts set email = 'newemail@gmail.com' where name = 'testuser17'").then(function (results) {
+      console.log('updates returned: ' + JSON.stringify(results))
+      console.dir(results)
 
-	it('Should work with updates', function(done) {
-		
-		if (!subject.isConnected()) {
-			expect(connectError).to.equal(null);
-			done();
-			return;	
-		}
+      done()
+    }).catch((err) => {
+      done(err)
+    })
+  })
 
-		var pquery = P.promisify(subject.query, {context: subject});
-		pquery("update accounts set email = 'newemail@gmail.com' where name = 'testuser17'").then(function(results){
-			
-			console.log('updates returned: ' + JSON.stringify(results));
-			console.dir(results);
+  it('Should work with inserts', function (done) {
+    if (!subject.isConnected()) {
+      expect(connectError).to.equal(null)
+      done()
+      return
+    }
 
-			done();
-		}).catch((err)=>{
-			done(err);
-		});		
-	});
+    const pquery = P.promisify(subject.query, { context: subject })
+    pquery("select top 2 * from app_log\ninsert into app_log (target, date, lvel, message) values ('testing', getdate(), 'ERROR', 'msg')\ninsert into app_log (target, date, lvel, message) values ('testing2', getdate(), 'ERROR', 'msg')\nselect top 2 * from app_log").then(function (results) {
+      console.log('inserts returned: ' + JSON.stringify(results))
+      console.dir(results)
 
-	it('Should work with inserts', function(done) {
-		
-		if (!subject.isConnected()) {
-			expect(connectError).to.equal(null);
-			done();
-			return;	
-		}
+      done()
+    }).catch((err) => {
+      done(err)
+    })
+  })
 
-		var pquery = P.promisify(subject.query, {context: subject});
-		pquery("select top 2 * from app_log\ninsert into app_log (target, date, lvel, message) values ('testing', getdate(), 'ERROR', 'msg')\ninsert into app_log (target, date, lvel, message) values ('testing2', getdate(), 'ERROR', 'msg')\nselect top 2 * from app_log").then(function(results){
-			
-			console.log('inserts returned: ' + JSON.stringify(results));
-			console.dir(results);
+  it('Should work with stored procedres', function (done) {
+    if (!subject.isConnected()) {
+      expect(connectError).to.equal(null)
+      done()
+      return
+    }
 
-			done();
-		}).catch((err)=>{
-			done(err);
-		});		
-	});
+    const pquery = P.promisify(subject.query, { context: subject })
+    pquery('exec sp_test').then(function (results) {
+      console.log('inserts returned: ' + JSON.stringify(results))
+      console.dir(results)
 
-	it('Should work with stored procedres', function(done) {
-		
-		if (!subject.isConnected()) {
-			expect(connectError).to.equal(null);
-			done();
-			return;	
-		}
+      done()
+    }).catch((err) => {
+      done(err)
+    })
+  })
 
-		var pquery = P.promisify(subject.query, {context: subject});
-		pquery("exec sp_test").then(function(results){
-			
-			console.log('inserts returned: ' + JSON.stringify(results));
-			console.dir(results);
+  it('Multiple async Calls (batch)', function (done) {
+    if (!subject.isConnected()) {
+      expect(connectError).to.equal(null)
+      done()
+      return
+    }
 
-			done();
-		}).catch((err)=>{
-			done(err);
-		});		
-	});
-	
-	it("Multiple async Calls (batch)", function(done) {
-		
-		if (!subject.isConnected()) {
-			expect(connectError).to.equal(null);
-			done();
-			return;	
-		}
+    const pquery = P.promisify(subject.query, { context: subject })
 
-		var pquery = P.promisify(subject.query, {context: subject});
+    const pArray = []
 
-		var pArray = [];
+    for (let i = 0; i < 5; i++) {
+      pArray.push(pquery('select top 1 * from accounts'))
+    }
 
-		for (var i=0; i<5; i++)
-		{
-			pArray.push(pquery("select top 1 * from accounts"));
-		}
+    P.all(pArray).then(function (results) {
+      console.log(JSON.stringify(results))
 
-		P.all(pArray).then(function(results) {
-			
-			console.log(JSON.stringify(results));
+      results.forEach(function (data) {
+        expect(data).to.be.a('array')
+        expect(data.length).to.equal(1)
+      })
+      done()
+    }).catch(function (err) {
+      done(err)
+    })
+  })
 
-			results.forEach(function(data) {
-				expect(data).to.be.a('array');
-				expect(data.length).to.equal(1);				
-			});
-			done();
+  it('Batch with one error', function (done) {
+    if (!subject.isConnected()) {
+      expect(connectError).to.equal(null)
+      done()
+      return
+    }
 
-		}).catch(function(err) {
-			done(err);
-		});
-	});
+    const pquery = P.promisify(subject.query, { context: subject })
 
-	it("Batch with one error", function(done) {
-		
-		if (!subject.isConnected()) {
-			expect(connectError).to.equal(null);
-			done();
-			return;	
-		}
+    const pArray = []
 
-		var pquery = P.promisify(subject.query, {context: subject});
+    const badEgg = pquery('select * from tableThatDoesntExist')
+    for (let i = 0; i < 5; i++) {
+      pArray.push(pquery('select top 1 * from accounts'))
+    }
 
-		var pArray = [];
+    P.all(pArray).then(function (results) {
+      console.log(JSON.stringify(results))
 
-		var badEgg = pquery("select * from tableThatDoesntExist");
-		for (var i=0; i<5; i++)
-		{
-			pArray.push(pquery("select top 1 * from accounts"));
-		}
-		
-		P.all(pArray).then(function(results) {
-			
-			console.log(JSON.stringify(results));
+      results.forEach(function (data) {
+        expect(data).to.be.a('array')
+        expect(data.length).to.equal(1)
+      })
+    }).catch(function (err) {
+      done(err)
+    })
 
-			results.forEach(function(data) {
-				expect(data).to.be.a('array');
-				expect(data.length).to.equal(1);				
-			});
-
-		}).catch(function(err) {
-			done(err);
-		});
-
-		badEgg.then(function(results) {
-			done(new Error("Expected an error from this call."));
-		}).catch(function(err) {
-			//console.log("error:" + err.message);
-			expect(err.message).to.contain("tableThatDoesntExist");
-			done();
-		});
-	});
-
-});
+    badEgg.then(function (results) {
+      done(new Error('Expected an error from this call.'))
+    }).catch(function (err) {
+      // console.log("error:" + err.message);
+      expect(err.message).to.contain('tableThatDoesntExist')
+      done()
+    })
+  })
+})
