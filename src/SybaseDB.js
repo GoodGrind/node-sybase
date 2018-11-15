@@ -46,8 +46,12 @@ Sybase.prototype.connect = function (callback) {
     that.connected = true
 
     // set up normal listeners.
-    that.javaDB.stdout.setEncoding(that.dbCharset).pipe(that.jsonParser).on('data', function (jsonMsg) { that.onSQLResponse(that, jsonMsg) })
-    that.javaDB.stderr.on('data', function (err) { that.onSQLError(that, err) })
+    that.javaDB.stdout.setEncoding(that.dbCharset).pipe(that.jsonParser).on('data', function (jsonMsg) {
+      that.onSQLResponse(jsonMsg)
+    })
+    that.javaDB.stderr.on('data', function (err) {
+      that.onSQLError(err)
+    })
 
     callback(null, data)
   })
