@@ -1,12 +1,8 @@
 const spawn = require('child_process').spawn
 const path = require('path')
 const JSONStream = require('JSONStream')
-const fs = require('fs')
 
-// FIXME: this is bad should be a way to expose this jar file in the npm package
-// so that it can be called properly from parent packages.
-const PATH_TO_JAVA_BRIDGE1 = path.join(__dirname, '/node_modules/sybase/JavaSybaseLink/dist/JavaSybaseLink.jar')
-const PATH_TO_JAVA_BRIDGE2 = './JavaSybaseLink/dist/JavaSybaseLink.jar'
+const DEFAULT_PATH_TO_SYBASE_DRIVER = path.join(__dirname, '/JavaSybaseLink/dist/JavaSybaseLink.jar')
 
 function Sybase (host, port, dbname, username, password, logTiming, pathToJavaBridge, dbCharset) {
   this.connected = false
@@ -18,14 +14,7 @@ function Sybase (host, port, dbname, username, password, logTiming, pathToJavaBr
   this.logTiming = (logTiming === true)
   this.dbCharset = dbCharset || 'utf8'
 
-  this.pathToJavaBridge = pathToJavaBridge
-  if (this.pathToJavaBridge === undefined) {
-    if (fs.existsSync(PATH_TO_JAVA_BRIDGE1)) {
-      this.pathToJavaBridge = PATH_TO_JAVA_BRIDGE1
-    } else {
-      this.pathToJavaBridge = PATH_TO_JAVA_BRIDGE2
-    }
-  }
+  this.pathToJavaBridge = pathToJavaBridge || DEFAULT_PATH_TO_SYBASE_DRIVER
 
   this.queryCount = 0
   this.currentMessages = {} // look up msgId to message sent and call back details.
