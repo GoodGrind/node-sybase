@@ -2,7 +2,7 @@ const spawn = require('child_process').spawn
 const path = require('path')
 const JSONStream = require('JSONStream')
 
-const DEFAULT_PATH_TO_SYBASE_DRIVER = path.join(__dirname, '/JavaSybaseLink/dist/JavaSybaseLink.jar')
+const DEFAULT_PATH_TO_SYBASE_DRIVER = path.join(__dirname, '../JavaSybaseLink/dist/JavaSybaseLink.jar')
 
 function Sybase (host, port, dbname, username, password, logTiming, pathToJavaBridge, dbCharset) {
   this.connected = false
