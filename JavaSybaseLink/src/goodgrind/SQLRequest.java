@@ -1,3 +1,5 @@
+package goodgrind;
+
 /**
  *
  * @author rod

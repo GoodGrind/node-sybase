@@ -1,3 +1,4 @@
+package goodgrind;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,8 +17,8 @@ public class StdInputReader {
 	private List<SQLRequestListener> listeners = new ArrayList<SQLRequestListener>();
 	private BufferedReader inputBuffer = new BufferedReader(new InputStreamReader(System.in));
 
-	public StdInputReader() {
-
+	public StdInputReader(SQLRequestListener listener) {
+		this.listeners.add(listener);
 	}
 
 	public void startReadLoop()

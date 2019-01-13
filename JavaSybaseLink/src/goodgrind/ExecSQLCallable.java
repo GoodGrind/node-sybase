@@ -1,3 +1,4 @@
+package goodgrind;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,6 +15,8 @@ import net.minidev.json.JSONObject;
  * @author rod
  */
 public class ExecSQLCallable implements Callable<String> {
+    private static final int TYPE_TIME_STAMP = 93;
+    private static final int TYPE_DATE = 91;
 
 	private Connection conn;
 	//private Gson gson;
@@ -74,8 +77,8 @@ public class ExecSQLCallable implements Callable<String> {
 						int dataType = meta.getColumnType(c);
 						switch (dataType)
 						{
-							case SybaseDB.TYPE_TIME_STAMP:
-							case SybaseDB.TYPE_DATE:
+							case TYPE_TIME_STAMP:
+							case TYPE_DATE:
 								String my8601formattedDate = df.format(new Date(rs.getTimestamp(c).getTime()));
 								row.put(columns[c], my8601formattedDate);
 								break;
@@ -107,6 +110,4 @@ public class ExecSQLCallable implements Callable<String> {
 			System.out.println(s);
 		}
 	}
-
-
 }
