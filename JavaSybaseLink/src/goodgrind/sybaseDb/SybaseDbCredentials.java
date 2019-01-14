@@ -38,8 +38,7 @@ public class SybaseDbCredentials implements SybaseDb {
             return true;
 
         } catch (Exception ex) {
-            System.err.println(ex);
-            System.err.println(ex.getMessage());
+            ex.printStackTrace(System.err);
             return false;
         }
     }
