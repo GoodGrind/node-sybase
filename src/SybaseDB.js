@@ -29,7 +29,7 @@ function Sybase ({ host, port, database, userName, password, logTiming, pathToJa
 Sybase.prototype.connect = function (callback) {
   const that = this
   if (this.odbcUrl != null) {
-    this.javaDB = spawn('java', ['-jar', this.odbcUrl])
+    this.javaDB = spawn('java', ['-jar', this.pathToJavaBridge, this.odbcUrl])
   } else {
     this.javaDB = spawn('java', ['-jar', this.pathToJavaBridge, this.host, this.port, this.database, this.userName, this.password])
   }
