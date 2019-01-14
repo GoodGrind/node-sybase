@@ -4,15 +4,19 @@ const JSONStream = require('JSONStream')
 
 const DEFAULT_PATH_TO_SYBASE_DRIVER = path.join(__dirname, '../JavaSybaseLink/dist/JavaSybaseLink.jar')
 
-function Sybase (host, port, dbname, username, password, logTiming, pathToJavaBridge, dbCharset) {
+function Sybase ({ host, port, dbName, userName, password, logTiming, pathToJavaBridge, dbCharset, odbcUrl }) {
+  if (odbcUrl != null && (!!host || !!port || !!dbName || !!userName || !!password)) {
+    throw new Error(`If 'odbcUrl' is set, no other connection properties can be passed (host, port, dbName, userName, password)`)
+  }
   this.connected = false
   this.host = host
   this.port = port
-  this.dbname = dbname
-  this.username = username
+  this.dbName = dbName
+  this.userName = userName
   this.password = password
   this.logTiming = (logTiming === true)
   this.dbCharset = dbCharset || 'utf8'
+  this.odbcUrl = odbcUrl
 
   this.pathToJavaBridge = pathToJavaBridge || DEFAULT_PATH_TO_SYBASE_DRIVER
 
@@ -24,7 +28,11 @@ function Sybase (host, port, dbname, username, password, logTiming, pathToJavaBr
 
 Sybase.prototype.connect = function (callback) {
   const that = this
-  this.javaDB = spawn('java', ['-jar', this.pathToJavaBridge, this.host, this.port, this.dbname, this.username, this.password])
+  if (this.odbcUrl != null) {
+    this.javaDB = spawn('java', ['-jar', this.odbcUrl])
+  } else {
+    this.javaDB = spawn('java', ['-jar', this.pathToJavaBridge, this.host, this.port, this.dbName, this.userName, this.password])
+  }
 
   this.javaDB.stdout.once('data', function (data) {
     if ((data + '').trim() !== 'connected') {

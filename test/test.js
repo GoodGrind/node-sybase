@@ -6,16 +6,17 @@ const P = require('bluebird')
 // Configure To Connect To Your database here:
 const host = '10.0.0.141'
 const port = 5000
-const user = 'sa'
-const pw = ''
-const db = 'exchange_wl1'
+const userName = 'sa'
+const password = ''
+const dbName = 'exchange_wl1'
+const logTiming = true
 
 describe('Node Sybase Bridge', function () {
   let subject
   let connectError
 
   before(function (done) {
-    subject = new Sybase(host, port, db, user, pw, true)
+    subject = new Sybase({ host, port, dbName, userName, password, logTiming })
     subject.connect(function (err) {
       connectError = err
       done()
