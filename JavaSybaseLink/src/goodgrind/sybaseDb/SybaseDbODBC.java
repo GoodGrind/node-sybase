@@ -22,7 +22,7 @@ public class SybaseDbODBC implements SybaseDb {
     @Override
     public boolean connect() {
         try {
-            Class.forName("com.sybase.jdbc3.jdbc.SybDriver").newInstance();
+            Class.forName("sun.jdbc.odbc.JdbcOdbcDriver").newInstance();
             conn = DriverManager.getConnection("jdbc:odbc:" + odbcName);
             return true;
 
