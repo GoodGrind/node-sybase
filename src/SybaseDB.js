@@ -4,14 +4,14 @@ const JSONStream = require('JSONStream')
 
 const DEFAULT_PATH_TO_SYBASE_DRIVER = path.join(__dirname, '../JavaSybaseLink/dist/JavaSybaseLink.jar')
 
-function Sybase ({ host, port, dbName, userName, password, logTiming, pathToJavaBridge, dbCharset, odbcUrl }) {
-  if (odbcUrl != null && (!!host || !!port || !!dbName || !!userName || !!password)) {
+function Sybase ({ host, port, database, userName, password, logTiming, pathToJavaBridge, dbCharset, odbcUrl }) {
+  if (odbcUrl != null && (!!host || !!port || !!database || !!userName || !!password)) {
     throw new Error(`If 'odbcUrl' is set, no other connection properties can be passed (host, port, dbName, userName, password)`)
   }
   this.connected = false
   this.host = host
   this.port = port
-  this.dbName = dbName
+  this.database = database
   this.userName = userName
   this.password = password
   this.logTiming = (logTiming === true)
@@ -31,7 +31,7 @@ Sybase.prototype.connect = function (callback) {
   if (this.odbcUrl != null) {
     this.javaDB = spawn('java', ['-jar', this.odbcUrl])
   } else {
-    this.javaDB = spawn('java', ['-jar', this.pathToJavaBridge, this.host, this.port, this.dbName, this.userName, this.password])
+    this.javaDB = spawn('java', ['-jar', this.pathToJavaBridge, this.host, this.port, this.database, this.userName, this.password])
   }
 
   this.javaDB.stdout.once('data', function (data) {

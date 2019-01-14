@@ -8,7 +8,7 @@ const host = '10.0.0.141'
 const port = 5000
 const userName = 'sa'
 const password = ''
-const dbName = 'exchange_wl1'
+const database = 'exchange_wl1'
 const logTiming = true
 
 describe('Node Sybase Bridge', function () {
@@ -16,7 +16,7 @@ describe('Node Sybase Bridge', function () {
   let connectError
 
   before(function (done) {
-    subject = new Sybase({ host, port, dbName, userName, password, logTiming })
+    subject = new Sybase({ host, port, database, userName, password, logTiming })
     subject.connect(function (err) {
       connectError = err
       done()
